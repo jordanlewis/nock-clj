@@ -27,8 +27,8 @@
 
 ;; eat turns a Nock noun literal into our internal representation.
 ;; e.g. (eat [1 2 3]) -> '(1 2 3)
-(defn eat [x]
-  (if (coll? x) (apply cell (map eat x)) x))
+(defn eat [v]
+  (if (coll? v) (apply cell (map eat v)) v))
 
 (defn ncdr [noun]
   (if (empty? (rest (rest noun))) (second noun) (rest noun)))
@@ -91,5 +91,7 @@
                    (cell a (ncdr c))))
         :else noun))))
 
-(defn nock [noun]
-  (tar noun))
+;; the main entry-point to Nock for users. Pass in a real-life Nock noun as a
+;; Clojure literal: (nock [1 0 1]) -> 1
+(defn nock [v]
+  (tar (eat v)))
