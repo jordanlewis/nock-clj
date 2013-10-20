@@ -1,6 +1,8 @@
 # nock
 
-A Clojure library designed to ... well, that part is up to you.
+A Clojure library that implements a Nock interpreter.
+
+See http://urbit.org.
 
 ## Usage
 
