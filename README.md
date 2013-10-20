@@ -1,4 +1,4 @@
-# nock-clj
+# nock
 
 A Clojure library designed to ... well, that part is up to you.
 

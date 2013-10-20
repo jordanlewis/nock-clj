@@ -1,4 +1,4 @@
-(ns nock-clj.core
+(ns nock.core
   (:use [clojure.core.match :only (match)]
         [clojure.tools.logging :only (spy)]))
 

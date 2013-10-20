@@ -1,6 +1,6 @@
-(ns nock-clj.core-test
+(ns nock.core-test
   (:require [clojure.test :refer :all]
-            [nock-clj.core :refer :all]))
+            [nock.core :refer :all]))
 
 (deftest slot-test
   (testing "slot examples")
