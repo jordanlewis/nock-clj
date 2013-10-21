@@ -1,6 +1,5 @@
 (ns nock.core
-  (:use [clojure.core.match :only (match)]
-        [clojure.tools.logging :only (spy)]))
+  (:use [clojure.core.match :only (match)]))
 
 ;; PREAMBLE, AND INTERNAL DATA STRUCTURES
 ;;
