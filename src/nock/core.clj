@@ -30,9 +30,11 @@
 (defn eat [v]
   (if (coll? v) (apply cell (map eat v)) v))
 
-(defn ncdr [noun]
-  (if (seq (rest (rest noun))) (rest noun) (second noun)))
-
+;; ncar unwraps singleton seqs. We need to use this any time we're
+;; going to operate on a noun that's passed in as a list, unless the
+;; noun is the last argument of a call to (cell), which does this
+;; unwrapping for us automatically if necessary.
+;; e.g. (ncar '(1)) -> 1, but (ncar '(1 2)) -> '(1 2)
 (defn ncar [noun]
   (if (seq (rest noun)) noun (first noun)))
 
@@ -48,11 +50,13 @@
 
 ; +
 ; The lus operator increments an atom.
-(defn lus [noun] (if (wut noun) (inc noun) noun))
+(defn lus [noun] (if (number? noun) (inc noun) noun))
 
 ; =
 ; The tis operator checks for equality between two nouns.
-(defn tis [noun] (if (= (first noun) (ncdr noun)) 0 1))
+(defn tis [noun] (cond (number? noun) noun
+                       (= (first noun) (ncar (rest noun))) 0
+                       :else 1))
 
 ; \
 ; The slot (or fas) operator indexes into a list like a binary tree.
@@ -61,8 +65,8 @@
     [([1 & a] :seq)] (ncar a)
     [([2 a & b] :seq)] a
     [([3 a & b] :seq)] (ncar b)
-    [([(a :guard even?) & b] :seq)] (slot (cell 2 (slot (cell (quot a 2) (ncar b)))))
-    [([(a :guard odd? ) & b] :seq)] (slot (cell 3 (slot (cell (quot a 2) (ncar b)))))))
+    [([(a :guard even?) & b] :seq)] (slot (cell 2 (slot (cell (quot a 2) b))))
+    [([(a :guard odd? ) & b] :seq)] (slot (cell 3 (slot (cell (quot a 2) b))))))
 
 ; *
 ; The tar operator is Nock itself. It evaluates a noun.
@@ -76,10 +80,10 @@
     [([a 4 & b] :seq)] (lus (tar (cell a b)))
     [([a 5 & b] :seq)] (tis (tar (cell a b)))
     [([a 6 b c & d] :seq)] (tar (cell a 2 '(0 1) 2 (cell 1 c d) '(1 0) 2 '(1 2 3) '(1 0) 4 4 b))
-    [([a 7 b & c] :seq)] (tar (cell a 2 b 1 (ncar c)))
-    [([a 8 b & c] :seq)] (tar (cell a 7 (cell (cell 7 (cell 0 1) b) 0 1) c))
+    [([a 7 b & c] :seq)] (tar (cell a 2 b 1 c))
+    [([a 8 b & c] :seq)] (tar (cell a 7 (cell (cell 7 '(0 1) b) 0 1) c))
     [([a 9 b & c] :seq)] (tar (cell a 7 c 2 (cell 0 1) 0 b))
-    [([a 10 ([b & c] :seq) & d] :seq)] (tar (cell a 8  c 7 (cell 0 3) d))
+    [([a 10 ([b & c] :seq) & d] :seq)] (tar (cell a 8 c 7 '(0 3) d))
     [([a 10 b & c] :seq)] (tar (cell a c))))
 
 ;; the main entry-point to Nock for users. Pass in a real-life Nock noun as a
