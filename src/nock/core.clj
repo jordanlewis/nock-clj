@@ -1,6 +1,5 @@
 (ns nock.core
-  (:use [clojure.core.match :only (match)]
-        [criterium.core]))
+  (:use [clojure.core.match :only (match)]))
 
 ;; PREAMBLE, AND INTERNAL DATA STRUCTURES
 ;;
@@ -72,11 +71,44 @@
     [([(a :guard even?) & b] :seq)] (slot (sel 2 (slot (sel (quot a 2) b))))
     [([(a :guard odd? ) & b] :seq)] (slot (sel 3 (slot (sel (quot a 2) b))))))
 
-;; the actual implementation of tar. Takes a tar to delegate to. This exists
-;; for debugging purposes, so we can monitor the call stack if we need to.
-(defn dotar
-  ([noun] (dotar noun dotar))
-  ([noun tar] (match [noun]
+;; define a few macros for verbose printing.
+;; these macros, when *verbose* is set to true, emit print statements
+;; that log the reduction steps of a noun. if *verbose* is set to false,
+;; they emit as close to the original code as possible.
+;; they assume the existence of 'depth and 'noun, the arguments of dotar.
+
+;; indentstring makes a string of enough spaces to match depth
+(def indentstring '(apply str (repeat depth "  ")))
+
+;; printbefore prints out our noun before eval
+(defmacro printbefore []
+  (if *verbose* `(println ~indentstring ~'noun "...")))
+
+;; printafter prints the result of form, along with the noun that made it
+(defmacro printafter [form]
+  (if *verbose*
+    `(let [~'ret ~form]
+       (println ~indentstring ~'noun "->" ~'ret)
+       ~'ret)
+    form))
+
+;; temporarily define tar to be a macro that invokes dotar with either the
+;; current depth plus one, if we're in verbose mode, or nil if we're not.
+;; We use this so that inside of dotar we can write 'tar' when we mean 'tar',
+;; and not worry about having to thread depth through everything.
+(defmacro tar [form]
+  (if *verbose*
+    `(dotar ~form (inc ~'depth))
+    `(dotar ~form nil)))
+
+; *
+; The tar operator is Nock itself. It evaluates a noun. Depth is how many
+; levels of tar we've gone through so far.
+; We temporarily define it as 'dotar' for the benefits of threading depth
+; through the computation.
+(defn dotar [noun depth]
+  (printbefore)
+  (printafter (match [noun]
     [([a ([b & c] :seq) & d] :seq)] (sel (tar (sel a b c)) (tar (sel a d)))
     [([a 0 & b] :seq)] (slot (sel (buy b) a))
     [([a 1 & b] :seq)] (buy b)
@@ -108,18 +140,8 @@
     [([a 10 ([b & c] :seq) & d] :seq)] (tar (sel a d))
     [([a 10 b & c] :seq)] (tar (sel a c)))))
 
-(defn depthtar [noun depth]
-  (let
-    [tarp   (fn [x] (depthtar x (inc depth)))
-     indent (apply str (repeat depth "  "))
-     _      (println indent noun "...")
-     result (dotar tarp noun)]
-    (println indent noun "->" result nil)
-    result))
-
-; *
-; The tar operator is Nock itself. It evaluates a noun.
-(defn tar [noun] (if *verbose* (depthtar noun 0) (dotar noun dotar)))
+(defn tar [noun]
+  (dotar noun 0))
 
 ;; the main entry-point to Nock for users. Pass in a real-life Nock noun as a
 ;; Clojure literal: (nock [1 0 1]) -> 1
