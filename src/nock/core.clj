@@ -1,5 +1,6 @@
 (ns nock.core
-  (:use [clojure.core.match :only (match)]))
+  (:use [clojure.core.match :only (match)]
+        [criterium.core]))
 
 ;; PREAMBLE, AND INTERNAL DATA STRUCTURES
 ;;
@@ -147,3 +148,14 @@
 ;; Clojure literal: (nock [1 0 1]) -> 1
 (defn nock [v]
   (tar (eat v)))
+
+(comment
+  (nock [42 7 [[4 0 1] 0 1] [4 0 3]]))
+
+;; 2.5ms normally
+;; 2ms with macro'd if
+;; 1.5ms with macro'd comp
+;; 1.3ms with macro'd core application
+;;(time (tar (eat [110 [8 [1 0] 8 [1 6 [5 [0 7] 4 0 6] [0 6] 9 2 [0 2] [4 0 6] 0 7] 9 2 0 1]])))
+;;(quick-bench (tar (eat [110 [8 [1 0] 8 [1 6 [5 [0 7] 4 0 6] [0 6] 9 2 [0 2] [4 0 6] 0 7] 9 2 0 1]])))
+;;(time  (tar (eat [250 [8 [1 0] 8 [1 6 [5 [0 7] 4 0 6] [0 6] 9 2 [0 2] [4 0 6] 0 7] 9 2 0 1]]))) 
