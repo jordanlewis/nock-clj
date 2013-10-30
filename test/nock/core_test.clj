@@ -4,13 +4,13 @@
 
 (deftest slot-test
   (testing "slot examples")
-    (is (= '((4 5) (6 14 15))   (slot '(1 (4 5) (6 14 15)))))
-    (is (= '(4 5)               (slot '(2 (4 5) (6 14 15)))))
-    (is (= '(6 14 15)           (slot '(3 (4 5) (6 14 15)))))
-    (is (= 4                    (slot '(4 (4 5) (6 14 15)))))
-    (is (= 5                    (slot '(5 (4 5) (6 14 15)))))
-    (is (= 6                    (slot '(6 (4 5) (6 14 15)))))
-    (is (= '(14 15)             (slot '(7 (4 5) (6 14 15))))))
+    (is (= '((4 5) (6 14 15))   (trampoline slot '(1 (4 5) (6 14 15)) identity)))
+    (is (= '(4 5)               (trampoline slot '(2 (4 5) (6 14 15)) identity)))
+    (is (= '(6 14 15)           (trampoline slot '(3 (4 5) (6 14 15)) identity)))
+    (is (= 4                    (trampoline slot '(4 (4 5) (6 14 15)) identity)))
+    (is (= 5                    (trampoline slot '(5 (4 5) (6 14 15)) identity)))
+    (is (= 6                    (trampoline slot '(6 (4 5) (6 14 15)) identity)))
+    (is (= '(14 15)             (trampoline slot '(7 (4 5) (6 14 15)) identity))))
 
 (deftest tar-test
   (testing "tar examples")
